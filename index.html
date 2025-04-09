@@ -77,37 +77,64 @@
 
 
 <script>
-// Gyroscope permission for iOS 13+ and motion tracking support
-if (typeof DeviceOrientationEvent !== 'undefined' &&
-    typeof DeviceOrientationEvent.requestPermission === 'function') {
+// Always show the button for testing purposes
+const gyroBtn = document.createElement('button');
+gyroBtn.innerHTML = "Enable Gyro View (Debug)";
+gyroBtn.style.position = 'absolute';
+gyroBtn.style.top = '20px';
+gyroBtn.style.left = '20px';
+gyroBtn.style.zIndex = '10000';
+gyroBtn.style.padding = '10px 15px';
+gyroBtn.style.fontSize = '16px';
+gyroBtn.style.background = '#222';
+gyroBtn.style.color = '#fff';
+gyroBtn.style.border = 'none';
+gyroBtn.style.borderRadius = '5px';
+document.body.appendChild(gyroBtn);
 
-    const gyroBtn = document.createElement('button');
-    gyroBtn.innerHTML = "Enable Gyro View";
-    gyroBtn.style.position = 'absolute';
-    gyroBtn.style.top = '20px';
-    gyroBtn.style.left = '20px';
-    gyroBtn.style.zIndex = '10000';
-    gyroBtn.style.padding = '10px 15px';
-    gyroBtn.style.fontSize = '16px';
-    gyroBtn.style.background = '#222';
-    gyroBtn.style.color = '#fff';
-    gyroBtn.style.border = 'none';
-    gyroBtn.style.borderRadius = '5px';
-    document.body.appendChild(gyroBtn);
+const debugMsg = document.createElement('div');
+debugMsg.id = 'gyro-debug';
+debugMsg.style.position = 'absolute';
+debugMsg.style.bottom = '20px';
+debugMsg.style.left = '20px';
+debugMsg.style.zIndex = '10000';
+debugMsg.style.background = 'rgba(0,0,0,0.7)';
+debugMsg.style.color = '#0f0';
+debugMsg.style.padding = '10px';
+debugMsg.style.fontSize = '14px';
+debugMsg.innerText = "Waiting for motion permission...";
+document.body.appendChild(debugMsg);
 
-    gyroBtn.addEventListener('click', function() {
+gyroBtn.addEventListener('click', function () {
+    debugMsg.innerText = "Requesting permission...";
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+
         DeviceOrientationEvent.requestPermission()
             .then(response => {
                 if (response === 'granted') {
-                    window.addEventListener('deviceorientation', () => {}, true);
+                    debugMsg.innerText = "Gyro permission granted!";
+                    window.addEventListener('deviceorientation', (event) => {
+                        debugMsg.innerText = "Gyro data detected!";
+                        console.log("Gyro:", event.alpha, event.beta, event.gamma);
+                    }, true);
                     gyroBtn.remove();
                 } else {
-                    alert("Permission denied for gyroscope.");
+                    debugMsg.innerText = "Permission denied.";
                 }
             })
-            .catch(console.error);
-    });
-}
+            .catch(error => {
+                debugMsg.innerText = "Error: " + error;
+            });
+    } else {
+        debugMsg.innerText = "No permission request API. Trying fallback...";
+        window.addEventListener('deviceorientation', (event) => {
+            debugMsg.innerText = "Gyro data detected!";
+            console.log("Gyro (no request):", event.alpha, event.beta, event.gamma);
+        }, true);
+        gyroBtn.remove();
+    }
+});
 </script>
 
 </body>
