@@ -75,5 +75,40 @@
 <script src="data.js"></script>
 <script src="index.js"></script>
 
+
+<script>
+// Gyroscope permission for iOS 13+ and motion tracking support
+if (typeof DeviceOrientationEvent !== 'undefined' &&
+    typeof DeviceOrientationEvent.requestPermission === 'function') {
+
+    const gyroBtn = document.createElement('button');
+    gyroBtn.innerHTML = "Enable Gyro View";
+    gyroBtn.style.position = 'absolute';
+    gyroBtn.style.top = '20px';
+    gyroBtn.style.left = '20px';
+    gyroBtn.style.zIndex = '10000';
+    gyroBtn.style.padding = '10px 15px';
+    gyroBtn.style.fontSize = '16px';
+    gyroBtn.style.background = '#222';
+    gyroBtn.style.color = '#fff';
+    gyroBtn.style.border = 'none';
+    gyroBtn.style.borderRadius = '5px';
+    document.body.appendChild(gyroBtn);
+
+    gyroBtn.addEventListener('click', function() {
+        DeviceOrientationEvent.requestPermission()
+            .then(response => {
+                if (response === 'granted') {
+                    window.addEventListener('deviceorientation', () => {}, true);
+                    gyroBtn.remove();
+                } else {
+                    alert("Permission denied for gyroscope.");
+                }
+            })
+            .catch(console.error);
+    });
+}
+</script>
+
 </body>
 </html>
